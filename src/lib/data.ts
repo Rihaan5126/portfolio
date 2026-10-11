@@ -78,6 +78,18 @@ export const projects: Project[] = [
       "Every texture is generated procedurally on canvas, nothing downloaded or scraped",
     featured: true,
   },
+  {
+    slug: "aether",
+    title: "AETHER",
+    description:
+      "A research platform that trains and evolves a population of trading agents (rule-based, Random Forest, XGBoost, PyTorch) and ranks them with purged walk-forward validation and realistic costs. Historical simulation only: it never places orders and makes no profitability claims.",
+    tags: ["Python", "Machine Learning", "PyTorch", "FastAPI", "Next.js"],
+    href: "https://aetherbyrihaan.vercel.app/",
+    repoHref: "https://github.com/Rihaan5126/AETHER",
+    highlight:
+      "Locked final-test split plus purged walk-forward folds to guard against leakage",
+    featured: true,
+  },
 ];
 
 export const allProjectTags: string[] = Array.from(
