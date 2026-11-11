@@ -1,97 +1,72 @@
-import type { NavLink, Profile, Project, SkillGroup, SocialLink } from "./types";
+// Single entry point for all site content. Edit the modules in ./content:
+//   profile.ts     hero, about, contact copy, nav, socials, "now" items
+//   projects.ts    every project and its case study
+//   skills.ts      toolkit groups
+//   experience.ts  timeline
+// See README.md for the full guide.
 
-// Edit the values below to update the site's content; nothing else in the
-// codebase needs to change. See README.md for the full guide.
+import type { Project, ProjectCategory } from "./types";
+import { projects as rawProjects } from "./content/projects";
 
-export const profile: Profile = {
-  name: "Rihaan",
-  headline: "EE + CS Student",
-  bio: "Ambitious undergrad who loves software engineering, agentic AI, and building things end to end. I'm happiest solving complex, rigorous problems, from scraping and matching pipelines to LLM-driven automation, and shipping tools people actually use.",
-  location: "Birmingham, UK",
-  email: "hashmanirihaan@gmail.com",
+export {
+  profile,
+  socialLinks,
+  navLinks,
+  heroDomains,
+  howIWork,
+  themes,
+  nowItems,
+} from "./content/profile";
+export { skillGroups } from "./content/skills";
+export { experience } from "./content/experience";
+
+export const categoryLabels: Record<ProjectCategory, string> = {
+  "ai-ml": "AI & ML",
+  "systems-graphics": "Systems & Graphics",
+  robotics: "Robotics",
+  "full-stack": "Full Stack",
 };
 
-export const socialLinks: SocialLink[] = [
-  { label: "GitHub", href: "https://github.com/Rihaan5126", icon: "github" },
-  {
-    label: "LinkedIn",
-    href: "https://www.linkedin.com/in/rihaan-hashmani-2035a82b7",
-    icon: "linkedin",
-  },
-  { label: "Email", href: "mailto:hashmanirihaan@gmail.com", icon: "email" },
+export const categoryOrder: ProjectCategory[] = [
+  "ai-ml",
+  "systems-graphics",
+  "robotics",
+  "full-stack",
 ];
 
-export const navLinks: NavLink[] = [
-  { label: "About", href: "#about" },
-  { label: "Skills", href: "#skills" },
-  { label: "Projects", href: "#projects" },
-  { label: "Contact", href: "#contact" },
-];
+function validate(list: Project[]): Project[] {
+  const slugs = new Set<string>();
+  for (const project of list) {
+    if (slugs.has(project.slug)) {
+      throw new Error(`Duplicate project slug: ${project.slug}`);
+    }
+    slugs.add(project.slug);
+    for (const href of [project.demoHref, project.repoHref, project.articleHref]) {
+      if (href && !href.startsWith("https://")) {
+        throw new Error(`Project ${project.slug} has a non-https link: ${href}`);
+      }
+    }
+  }
+  return [...list].sort((a, b) => a.order - b.order);
+}
 
-export const skillGroups: SkillGroup[] = [
-  {
-    category: "Frontend",
-    skills: ["Next.js / React", "TypeScript", "Tailwind CSS"],
-  },
-  {
-    category: "Backend & Data",
-    skills: ["Python (ML / data)", "Supabase", "Machine Learning"],
-  },
-  {
-    category: "Automation & AI",
-    skills: ["Playwright", "LLM Automation", "Prompt Engineering"],
-  },
-];
+export const projects: Project[] = validate(rawProjects);
+export const featuredProjects: Project[] = projects.filter((project) => project.featured);
+export const secondaryProjects: Project[] = projects.filter(
+  (project) => !project.featured,
+);
 
-export const projects: Project[] = [
-  {
-    slug: "clearing-university-scraper",
-    title: "Clearing University Scraper",
-    description:
-      "A Playwright-driven scraper covering roughly 70% of Russell Group universities with a ~75% reliable success rate at pulling live Clearing vacancy data. I used it myself during UCAS Clearing to help secure a place at the University of Birmingham.",
-    tags: ["Playwright", "TypeScript", "Automation", "Next.js", "Supabase"],
-    href: "https://clearing-app-theta.vercel.app/",
-    repoHref: "https://github.com/Rihaan5126/clearing-app",
-    highlight: "Used it myself to secure a University of Birmingham offer",
-    featured: true,
-  },
-  {
-    slug: "rig-tracker",
-    title: "RIG Tracker",
-    description:
-      "A local SaaS MVP for authorized Instagram profile research: historical snapshot tracking, media and engagement analytics, and scheduled monitoring with in-app notifications. Ships with a safe fictional demo provider alongside a real Meta Instagram Login integration path.",
-    tags: ["Next.js", "TypeScript", "PostgreSQL", "Redis", "Recharts"],
-    href: "https://rig-tracker.vercel.app/",
-    repoHref: "https://github.com/Rihaan5126/RIG-Tracker",
-    highlight: "1,830 generated snapshots across 5 demo accounts, zero real scraping",
-    featured: true,
-  },
-  {
-    slug: "uob-campus-map",
-    title: "Interactive Campus Map",
-    description:
-      "A 3D digital-twin map of the University of Birmingham's Edgbaston campus: 60 real buildings extruded from OpenStreetMap footprint data, a cinematic drone-style camera, and a dedicated 360° viewer for two bespoke landmark models.",
-    tags: ["Three.js", "TypeScript", "WebGL", "Vite", "Procedural Generation"],
-    href: "https://rob-indol.vercel.app/",
-    repoHref: "https://github.com/Rihaan5126/ROB",
-    highlight:
-      "Every texture is generated procedurally on canvas, nothing downloaded or scraped",
-    featured: true,
-  },
-  {
-    slug: "aether",
-    title: "AETHER",
-    description:
-      "A research platform that trains and evolves a population of trading agents (rule-based, Random Forest, XGBoost, PyTorch) and ranks them with purged walk-forward validation and realistic costs. Historical simulation only: it never places orders and makes no profitability claims.",
-    tags: ["Python", "Machine Learning", "PyTorch", "FastAPI", "Next.js"],
-    href: "https://aetherbyrihaan.vercel.app/",
-    repoHref: "https://github.com/Rihaan5126/AETHER",
-    highlight:
-      "Locked final-test split plus purged walk-forward folds to guard against leakage",
-    featured: true,
-  },
-];
+export function getProject(slug: string): Project | undefined {
+  return projects.find((project) => project.slug === slug);
+}
 
-export const allProjectTags: string[] = Array.from(
-  new Set(projects.flatMap((project) => project.tags)),
-).sort();
+export function getAdjacentProjects(slug: string): {
+  previous: Project | undefined;
+  next: Project | undefined;
+} {
+  const index = projects.findIndex((project) => project.slug === slug);
+  return {
+    previous: index > 0 ? projects[index - 1] : undefined,
+    next: index >= 0 && index < projects.length - 1 ? projects[index + 1] : undefined,
+  };
+}

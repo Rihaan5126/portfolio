@@ -3,14 +3,17 @@
 import { useEffect, useState } from "react";
 
 /**
- * Tracks which section id is currently most visible in the viewport, so the
- * nav can highlight the corresponding link as the user scrolls.
+ * Tracks which section currently crosses the middle band of the viewport, so
+ * the nav can mark the matching link. Returns null when none of the ids exist
+ * on the page (for example on a project page).
  */
-export function useActiveSection(sectionIds: string[]) {
+export function useActiveSection(sectionIds: readonly string[]) {
   const [activeId, setActiveId] = useState<string | null>(null);
+  const key = sectionIds.join("|");
 
   useEffect(() => {
-    const elements = sectionIds
+    const ids = key.split("|").filter(Boolean);
+    const elements = ids
       .map((id) => document.getElementById(id))
       .filter((el): el is HTMLElement => el !== null);
 
@@ -18,20 +21,18 @@ export function useActiveSection(sectionIds: string[]) {
 
     const observer = new IntersectionObserver(
       (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-
-        if (visible.length > 0) {
-          setActiveId(visible[0].target.id);
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveId(entry.target.id);
+          }
         }
       },
-      { rootMargin: "-20% 0px -60% 0px", threshold: [0, 0.25, 0.5, 1] },
+      { rootMargin: "-45% 0px -50% 0px", threshold: 0 },
     );
 
     elements.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-  }, [sectionIds]);
+  }, [key]);
 
   return activeId;
 }

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
@@ -6,6 +6,7 @@ import { profile } from "@/lib/data";
 import { siteUrl } from "@/lib/site";
 import { Navbar } from "@/components/nav/Navbar";
 import { Footer } from "@/components/ui/Footer";
+import { RevealObserver } from "@/components/ui/RevealObserver";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,48 +18,61 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const title = `${profile.name} · ${profile.headline}`;
+const defaultTitle = `${profile.name} · Software, systems and AI`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: title,
+    default: defaultTitle,
     template: `%s · ${profile.name}`,
   },
-  description: profile.bio,
+  description: profile.description,
   keywords: [
     "Rihaan",
     "portfolio",
     "software engineer",
-    "Next.js",
-    "React",
+    "Computer Engineering",
     "machine learning",
-    "agentic AI",
+    "Rust",
+    "Three.js",
+    "robotics software",
   ],
   authors: [{ name: profile.name }],
+  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     url: siteUrl,
-    title,
-    description: profile.bio,
-    siteName: `${profile.name}'s Portfolio`,
+    title: defaultTitle,
+    description: profile.description,
+    siteName: `${profile.name}'s portfolio`,
+    locale: "en_GB",
   },
   twitter: {
     card: "summary_large_image",
-    title,
-    description: profile.bio,
+    title: defaultTitle,
+    description: profile.description,
   },
 };
 
-// Runs before hydration so the correct theme class is present on <html>
-// before first paint, avoiding a light/dark flash on load.
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#070b16" },
+    { media: "(prefers-color-scheme: light)", color: "#f3f6fc" },
+  ],
+};
+
+// Runs before hydration so the right theme class is on <html> before first
+// paint (no flash). It also adds "js", which scopes the reveal-on-scroll hidden
+// state so content is fully visible when JavaScript is unavailable.
 const themeInitScript = `
   (function () {
+    var root = document.documentElement;
+    root.classList.add("js");
     try {
       var stored = localStorage.getItem("theme");
       var theme = stored === "light" ? "light" : "dark";
-      document.documentElement.classList.toggle("dark", theme === "dark");
-      document.documentElement.style.colorScheme = theme;
+      root.classList.toggle("dark", theme === "dark");
+      root.style.colorScheme = theme;
     } catch (e) {}
   })();
 `;
@@ -76,9 +90,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </Script>
       </head>
       <body className="flex min-h-full flex-col" suppressHydrationWarning>
+        <a href="#main" className="skip-link">
+          Skip to content
+        </a>
         <Navbar />
-        <main className="flex-1">{children}</main>
+        <main id="main" className="flex-1">
+          {children}
+        </main>
         <Footer />
+        <RevealObserver />
       </body>
     </html>
   );

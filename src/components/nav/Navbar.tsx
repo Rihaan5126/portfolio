@@ -1,95 +1,121 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { navLinks, profile } from "@/lib/data";
 import { useActiveSection } from "@/hooks/useActiveSection";
+import { CloseIcon, MenuIcon } from "@/components/ui/Icons";
+import { Monogram } from "./Monogram";
 import { ThemeToggle } from "./ThemeToggle";
+
+const sectionIds = navLinks.map((link) => link.href.slice(1));
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const activeId = useActiveSection(navLinks.map((link) => link.href.slice(1)));
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const activeId = useActiveSection(sectionIds);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+        toggleRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [isOpen]);
 
   return (
-    <header className="border-border/60 bg-background/80 fixed inset-x-0 top-0 z-50 border-b backdrop-blur-md">
+    <header className="bg-background/70 fixed inset-x-0 top-0 z-50 border-b backdrop-blur-xl">
       <nav
         aria-label="Primary"
-        className="mx-auto flex h-16 max-w-5xl items-center justify-between px-6"
+        className="mx-auto flex h-16 w-full max-w-[1280px] items-center justify-between gap-4 px-5 sm:px-8 lg:px-10"
       >
-        <a
-          href="#top"
-          className="focus-ring text-foreground font-mono text-sm font-medium tracking-tight"
+        <Link
+          href="/"
+          className="flex items-center gap-3"
+          aria-label={`${profile.name}, home`}
         >
-          {profile.name}
-          <span className="text-accent">.</span>
-        </a>
+          <Monogram size={34} />
+          <span className="text-[1.05rem] font-semibold tracking-tight">
+            {profile.name}
+          </span>
+        </Link>
 
-        <ul className="hidden items-center gap-1 md:flex">
+        <ul className="hidden items-center gap-1 lg:flex">
           {navLinks.map((link) => {
             const isActive = activeId === link.href.slice(1);
             return (
               <li key={link.href}>
-                <a
-                  href={link.href}
-                  className={`focus-ring rounded-full px-4 py-2 font-mono text-sm transition-colors ${
-                    isActive ? "text-accent" : "text-muted hover:text-foreground"
+                <Link
+                  href={`/${link.href}`}
+                  aria-current={isActive ? "location" : undefined}
+                  className={`relative inline-flex rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
+                    isActive ? "text-foreground" : "text-muted hover:text-foreground"
                   }`}
-                  aria-current={isActive ? "true" : undefined}
                 >
                   {link.label}
-                </a>
+                  <span
+                    aria-hidden="true"
+                    className={`absolute inset-x-3.5 -bottom-0.5 h-px bg-[linear-gradient(90deg,var(--brand-from),var(--brand-to))] transition-opacity duration-300 ${
+                      isActive ? "opacity-100" : "opacity-0"
+                    }`}
+                  />
+                </Link>
               </li>
             );
           })}
         </ul>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
+          <Link href="/#contact" className="btn btn-primary btn-sm hidden sm:inline-flex">
+            Let&rsquo;s talk
+          </Link>
           <ThemeToggle />
           <button
+            ref={toggleRef}
             type="button"
-            className="focus-ring border-border text-foreground inline-flex h-9 w-9 items-center justify-center rounded-full border md:hidden"
+            className="text-foreground bg-surface/50 hover:border-cyan inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors lg:hidden"
             aria-label={isOpen ? "Close menu" : "Open menu"}
             aria-expanded={isOpen}
             aria-controls="mobile-menu"
             onClick={() => setIsOpen((open) => !open)}
           >
-            <svg
-              viewBox="0 0 24 24"
-              width="18"
-              height="18"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              aria-hidden="true"
-            >
-              {isOpen ? (
-                <path d="M6 6l12 12M18 6L6 18" />
-              ) : (
-                <path d="M4 7h16M4 12h16M4 17h16" />
-              )}
-            </svg>
+            {isOpen ? <CloseIcon /> : <MenuIcon />}
           </button>
         </div>
       </nav>
 
-      {isOpen && (
-        <ul
-          id="mobile-menu"
-          className="border-border bg-background flex flex-col gap-1 border-t px-6 py-4 md:hidden"
-        >
-          {navLinks.map((link) => (
-            <li key={link.href}>
-              <a
-                href={link.href}
-                onClick={() => setIsOpen(false)}
-                className="focus-ring text-muted hover:text-foreground block rounded-md px-2 py-2 font-mono text-sm"
-              >
-                {link.label}
-              </a>
-            </li>
-          ))}
+      <div
+        id="mobile-menu"
+        hidden={!isOpen}
+        className="bg-background/95 border-t backdrop-blur-xl lg:hidden"
+      >
+        <ul className="mx-auto flex w-full max-w-[1280px] flex-col px-5 py-3 sm:px-8">
+          {navLinks.map((link) => {
+            const isActive = activeId === link.href.slice(1);
+            return (
+              <li key={link.href} className="border-b last:border-b-0">
+                <Link
+                  href={`/${link.href}`}
+                  onClick={() => setIsOpen(false)}
+                  aria-current={isActive ? "location" : undefined}
+                  className={`flex items-center justify-between py-3.5 text-lg font-medium ${
+                    isActive ? "text-cyan" : "text-foreground"
+                  }`}
+                >
+                  {link.label}
+                  <span aria-hidden="true" className="text-muted font-mono text-sm">
+                    {link.href}
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
-      )}
+      </div>
     </header>
   );
 }
