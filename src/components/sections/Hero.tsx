@@ -1,8 +1,10 @@
-import { heroDomains, profile } from "@/lib/data";
+import { heroDomains, profile, socialLinks } from "@/lib/data";
 import { HeroOrbit } from "@/components/art/HeroOrbit";
 import { ButtonLink } from "@/components/ui/Button";
 import { DomainIcon } from "@/components/ui/Icons";
 import { cssVars } from "@/components/ui/reveal";
+
+const linkedin = socialLinks.find((link) => link.icon === "linkedin");
 
 export function Hero() {
   return (
@@ -44,6 +46,11 @@ export function Hero() {
               <ButtonLink href="https://github.com/Rihaan5126" variant="secondary">
                 GitHub
               </ButtonLink>
+              {linkedin && (
+                <ButtonLink href={linkedin.href} variant="secondary">
+                  LinkedIn
+                </ButtonLink>
+              )}
             </div>
 
             <ul
