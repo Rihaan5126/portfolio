@@ -23,14 +23,14 @@ export const projects: Project[] = [
     year: "2026",
     status: "Research prototype and early-stage initiative",
     role: "Co-founder. Simulator, mission integration and Mission Control.",
-    team: "Built with Cam and Ammar. First version made in 24 hours at WHACK 2026 for the Marshall Wace New Worlds Challenge.",
+    team: "Built with two teammates. First version made in 24 hours at WHACK 2026 for the Marshall Wace New Worlds Challenge.",
     problem: [
       "Most of the deep ocean has never been surveyed, and underwater robots run on a fixed battery. Most surveys follow a route planned before the dive, like mowing a lawn, and ignore what the robot finds on the way.",
       "ABYSS asks a narrower question: if a robot updates its beliefs after every survey and replans, does it find more life on the same energy budget, and can it still always get home?",
     ],
     contribution: [
       "I built the simulation backbone: the 900-waypoint GEBCO Monterey Canyon environment, the hidden biodiversity worlds, the energy and safe-return rules (SciPy Dijkstra over the seabed graph), deterministic runs and logging, and the mission contract that planners talk to. I also built Mission Control, the interactive Three.js replay.",
-      "The Bayesian learner, planner, baselines and benchmark statistics were built by Cam. The computer-vision pipeline and findings report were Ammar's. The project has continued as an early-stage initiative since the hackathon.",
+      "The Bayesian learner, planner, baselines and benchmark statistics were built by one teammate. The computer-vision pipeline and findings report were built by the other. The project has continued as an early-stage initiative since the hackathon.",
     ],
     approach: [
       {
